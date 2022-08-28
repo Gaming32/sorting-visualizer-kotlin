@@ -10,7 +10,7 @@ class VisualList(initialLength: Int) : AbstractList<Int>(), RandomAccess {
     internal var marks = mutableSetOf<Int>()
         private set
     private var currentDelay = 0.0
-    private var singleDelay = 0.0
+    var singleDelay = 0.0
     var delay = 1.0
         set(value) {
             if (value == 0.0) {

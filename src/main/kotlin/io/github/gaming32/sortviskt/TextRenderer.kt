@@ -77,7 +77,7 @@ object TextRenderer {
 
         allowedChars = javaClass.getResourceAsStream("/font.txt")?.let {
             BufferedReader(InputStreamReader(it, StandardCharsets.UTF_8))
-        }?.useLines { it.joinToString { line ->
+        }?.useLines { it.joinToString(separator = "") { line ->
             if (line[0] == '#') ""
             else line
         } } ?: ""
@@ -91,7 +91,7 @@ object TextRenderer {
     fun drawText(s: String, x: Float, y: Float, color: Int) {
         if (fontTex == 0) loadFont()
         var colorI = color
-        if ((colorI and 0xfc000000.toInt()) == 0) {
+        if ((colorI and 0xff000000.toInt()) == 0) {
             colorI = colorI or 0xff000000.toInt()
         }
         glColor4f(
@@ -141,9 +141,23 @@ object TextRenderer {
         val height = font.height
         val rgb = IntArray(width * height)
         font.getRGB(0, 0, width, height, rgb, 0, width)
+
+        val rgbBytes = ByteArray(width * height * 4)
+        for (i in rgb.indices) {
+            val pixel = rgb[i]
+            val a = pixel shr 24 and 0xff
+            val r = pixel shr 16 and 0xff
+            val g = pixel shr 8 and 0xff
+            val b = pixel and 0xff
+            rgbBytes[i * 4 + 0] = r.toByte()
+            rgbBytes[i * 4 + 1] = g.toByte()
+            rgbBytes[i * 4 + 2] = b.toByte()
+            rgbBytes[i * 4 + 3] = a.toByte()
+        }
+
         glTexImage2D(
             GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-            ByteBuffer.allocateDirect(width * height * 4).order(ByteOrder.BIG_ENDIAN).asIntBuffer().put(rgb)
+            ByteBuffer.allocateDirect(rgbBytes.size).order(ByteOrder.nativeOrder()).put(rgbBytes).flip() as ByteBuffer
         )
     }
 

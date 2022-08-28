@@ -23,17 +23,17 @@ class SortThread(val window: MainWindow, val sort: Sort) : Thread("SortThread") 
         val oldDelay = window.delayMultiplier
         window.delayMultiplier = 1024.0 / window.list.size
         window.list.delay = window.delayMultiplier
-//        window.graphics.label = "Shuffling..."
+        window.graphics.label = "Shuffling..."
         window.list.stats.reset()
         window.list.shuffle()
-//        window.graphics.label = "            "
+        window.graphics.label = "            "
         window.delayMultiplier = oldDelay
         window.list.delay = oldDelay
         window.list.marksLock.withLock {
             window.list.marks.clear()
         }
         sleep(750)
-//        window.graphics.label = sort.name
+        window.graphics.label = sort.name
         window.list.stats.reset()
         sort.run(window.list)
         window.list.marksLock.withLock {
