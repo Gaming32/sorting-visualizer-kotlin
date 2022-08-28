@@ -145,14 +145,10 @@ object TextRenderer {
         val rgbBytes = ByteArray(width * height * 4)
         for (i in rgb.indices) {
             val pixel = rgb[i]
-            val a = pixel shr 24 and 0xff
-            val r = pixel shr 16 and 0xff
-            val g = pixel shr 8 and 0xff
-            val b = pixel and 0xff
-            rgbBytes[i * 4 + 0] = r.toByte()
-            rgbBytes[i * 4 + 1] = g.toByte()
-            rgbBytes[i * 4 + 2] = b.toByte()
-            rgbBytes[i * 4 + 3] = a.toByte()
+            rgbBytes[i * 4 + 0] = (pixel shr 16 and 0xff).toByte()
+            rgbBytes[i * 4 + 1] = (pixel shr 8 and 0xff).toByte()
+            rgbBytes[i * 4 + 2] = (pixel and 0xff).toByte()
+            rgbBytes[i * 4 + 3] = (pixel shr 24 and 0xff).toByte()
         }
 
         glTexImage2D(

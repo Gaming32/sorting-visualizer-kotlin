@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
 import kotlin.concurrent.withLock
 
-class GraphicsThread(val list: VisualList) : Thread("GraphicsThread") {
+class GraphicsThread(private val list: VisualList) : Thread("GraphicsThread") {
     var shouldShowStats = true
     var label = ""
     var windowSize = 0 to 0
@@ -41,7 +41,7 @@ class GraphicsThread(val list: VisualList) : Thread("GraphicsThread") {
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         glTranslatef(0f, 0f, -200f)
-        while (!glfwWindowShouldClose(window)) {
+        while (!glfwWindowShouldClose(window) && !interrupted()) {
             glClear(GL_COLOR_BUFFER_BIT)
 
             list.lengthLock.withLock { render() }

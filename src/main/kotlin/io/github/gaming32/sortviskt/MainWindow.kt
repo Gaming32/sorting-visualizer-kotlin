@@ -49,17 +49,18 @@ class MainWindow : JFrame(APP_NAME) {
 
         add(Box.createVerticalStrut(10))
 
-        add(JButton("Import sort").also { importSort ->
-            importSort.alignmentX = CENTER_ALIGNMENT
-            importSort.addActionListener {
-                println("Import sort")
-            }
-        })
+//        add(JButton("Import sort").also { importSort ->
+//            importSort.alignmentX = CENTER_ALIGNMENT
+//            importSort.addActionListener {
+//                println("Import sort")
+//            }
+//        })
 
         add(JButton("Cancel delay").also { cancelDelay ->
             cancelDelay.alignmentX = CENTER_ALIGNMENT
             cancelDelay.addActionListener {
                 println("Cancel delay")
+                list.delay = 0.0
             }
         })
 
@@ -67,8 +68,25 @@ class MainWindow : JFrame(APP_NAME) {
             setDelay.alignmentX = CENTER_ALIGNMENT
             setDelay.addActionListener {
                 println("Change speed modifier")
+                val newDelayString = JOptionPane.showInputDialog(
+                    this, "Enter a speed multiplier:", (1 / delayMultiplier).toString()
+                ) ?: return@addActionListener
+                val newDelay = newDelayString.toDoubleOrNull()
+                if (newDelay == null) {
+                    JOptionPane.showMessageDialog(
+                        this, "Not a valid number: $newDelayString", title, JOptionPane.ERROR_MESSAGE
+                    )
+                    return@addActionListener
+                }
+                delayMultiplier = 1 / newDelay
+                list.delay = delayMultiplier
             }
         })
+    }
+
+    override fun dispose() {
+        graphics.interrupt()
+        super.dispose()
     }
 }
 
