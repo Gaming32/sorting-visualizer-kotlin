@@ -5,7 +5,7 @@ import io.github.gaming32.sortviskt.VisualList
 
 class BubbleSort : AbstractSort("Bubble Sort") {
     override fun run(list: VisualList) {
-        for (i in list.indices.reversed()) {
+        for (i in list.size downTo 1) {
             var sorted = true
             for (j in 1 until i) {
                 if (list[j - 1] > list[j]) {

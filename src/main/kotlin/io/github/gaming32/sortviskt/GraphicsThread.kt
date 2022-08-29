@@ -4,6 +4,7 @@ import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
 import kotlin.concurrent.withLock
+import kotlin.math.roundToInt
 
 class GraphicsThread(private val list: VisualList) : Thread("GraphicsThread") {
     var shouldShowStats = true
@@ -37,17 +38,30 @@ class GraphicsThread(private val list: VisualList) : Thread("GraphicsThread") {
         }
         glViewport(0, 0, windowSize.first, windowSize.second)
 
+        // Commented out until we render a text shadow
+//        glEnable(GL_BLEND)
+//        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
         glClearColor(0f, 0f, 0f, 1f)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         glTranslatef(0f, 0f, -200f)
+
+        var lastTime = glfwGetTime()
+        var averageTimeDelta = 0.0
         while (!glfwWindowShouldClose(window) && !interrupted()) {
+            val currentTime = glfwGetTime()
+            val timeDelta = currentTime - lastTime
+
             glClear(GL_COLOR_BUFFER_BIT)
 
             list.lengthLock.withLock { render() }
             if (shouldShowStats) {
-                showStats()
+                showStats(averageTimeDelta)
             }
+
+            lastTime = currentTime
+            averageTimeDelta = (timeDelta + averageTimeDelta * 9) / 10
 
             glfwSwapBuffers(window)
             glfwPollEvents()
@@ -70,7 +84,7 @@ class GraphicsThread(private val list: VisualList) : Thread("GraphicsThread") {
                 glColor3f(1f, 1f, 1f)
             }
             val x = i.toFloat()
-            val height = list.internal[i].toFloat()
+            val height = (list.internal[i] + 1).toFloat()
             glVertex2f(x, 0f)
             glVertex2f(x, height)
             glVertex2f(x + 1, 0f)
@@ -81,7 +95,7 @@ class GraphicsThread(private val list: VisualList) : Thread("GraphicsThread") {
         glEnd()
     }
 
-    private fun showStats() {
+    private fun showStats(averageTimeDelta: Double) {
         glEnable(GL_TEXTURE_2D)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
@@ -92,7 +106,8 @@ class GraphicsThread(private val list: VisualList) : Thread("GraphicsThread") {
             " ${list.size.toString().padStart(7)} numbers" +
             "   ${delay.toString().padStart(5)}ms delay" +
             "   ${stats.writes.toString().padStart(4)} writes" +
-            "   ${stats.accesses.toString().padStart(4)} accesses"
+            "   ${stats.accesses.toString().padStart(4)} accesses" +
+            "   ${(1 / averageTimeDelta).roundToInt()} FPS"
         TextRenderer.drawText(text, 5f, 5f, 0xffffff)
     }
 }

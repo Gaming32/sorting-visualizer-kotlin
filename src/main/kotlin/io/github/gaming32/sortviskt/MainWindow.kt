@@ -1,8 +1,15 @@
 package io.github.gaming32.sortviskt
 
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.*
 import javax.swing.Timer
+import kotlin.math.log2
+import kotlin.math.pow
+import kotlin.math.roundToInt
 
 internal const val APP_NAME = "Kotlin Sorting Visualizer"
 
@@ -81,6 +88,67 @@ class MainWindow : JFrame(APP_NAME) {
                 delayMultiplier = 1 / newDelay
                 list.delay = delayMultiplier
             }
+        })
+
+        add(JCheckBox("Show stats").also { checkBox ->
+            checkBox.alignmentX = CENTER_ALIGNMENT
+            checkBox.isSelected = graphics.shouldShowStats
+            checkBox.addActionListener {
+                graphics.shouldShowStats = checkBox.isSelected
+            }
+        })
+
+        add(JSlider(JSlider.VERTICAL, 10_0000, 20_00000, 11_00000).also { slider ->
+            var lockToPow2 = false
+            var lockSlider = false
+            slider.addChangeListener {
+                if (lockSlider) return@addChangeListener
+                lockSlider = true
+                var valuePow2 = slider.value / 1_00000.0
+                if (lockToPow2) {
+                    valuePow2 = valuePow2.roundToInt().toDouble()
+                }
+                slider.value = (valuePow2 * 1_00000).toInt()
+                list.reset(2.0.pow(valuePow2).toInt())
+                lockSlider = false
+            }
+            slider.addMouseListener(object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent) {
+                    if (e.clickCount == 2) {
+                        val newSizeString = JOptionPane.showInputDialog(
+                            this@MainWindow,
+                            "Enter array size:",
+                            2.0.pow(slider.value / 1_00000.0).roundToInt().toString()
+                        ) ?: return
+                        val newSize = newSizeString.toIntOrNull()
+                        if (newSize == null) {
+                            JOptionPane.showMessageDialog(
+                                this@MainWindow,
+                                "Not a valid integer: $newSizeString",
+                                title,
+                                JOptionPane.ERROR_MESSAGE
+                            )
+                            return
+                        }
+                        slider.value = (log2(newSize.toDouble()) * 1_00000).toInt()
+                    }
+                }
+            })
+            val keyListener = object : KeyAdapter() {
+                override fun keyPressed(e: KeyEvent) {
+                    if (e.keyCode == KeyEvent.VK_SHIFT) {
+                        lockToPow2 = true
+                    }
+                }
+
+                override fun keyReleased(e: KeyEvent) {
+                    if (e.keyCode == KeyEvent.VK_SHIFT) {
+                        lockToPow2 = false
+                    }
+                }
+            }
+            addKeyListener(keyListener)
+            slider.addKeyListener(keyListener)
         })
     }
 
