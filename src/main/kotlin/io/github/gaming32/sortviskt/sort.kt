@@ -11,9 +11,9 @@ interface Sort {
 
 abstract class AbstractSort(override val name: String) : Sort
 
-class SortThread(val window: MainWindow, val sort: Sort) : Thread("SortThread") {
+class SortThread(private val window: MainWindow, private val sort: Sort) : Thread("SortThread") {
     init {
-        isDaemon = true
+        isDaemon = false
     }
 
     override fun run() {

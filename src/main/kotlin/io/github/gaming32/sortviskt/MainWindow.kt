@@ -16,8 +16,8 @@ internal const val APP_NAME = "Kotlin Sorting Visualizer"
 class MainWindow : JFrame(APP_NAME) {
     private val sorts = mutableMapOf<String, Sort>()
     val list = VisualList(2048)
-    val graphics = GraphicsThread(list)
-    var sortThread: SortThread? = null
+    val graphics = GraphicsThread(this)
+    private var sortThread: SortThread? = null
 
     lateinit var chooseSort: JLabel
         private set

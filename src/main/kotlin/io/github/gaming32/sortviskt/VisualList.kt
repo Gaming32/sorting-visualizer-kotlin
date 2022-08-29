@@ -6,9 +6,8 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 class VisualList(initialLength: Int) : AbstractList<Int>(), RandomAccess {
-    internal var internal = (0 until initialLength).toMutableList()
-    internal var marks = mutableSetOf<Int>()
-        private set
+    internal val internal = (0 until initialLength).toMutableList()
+    internal val marks = mutableSetOf<Int>()
     private var currentDelay = 0.0
     var singleDelay = 0.0
     var delay = 1.0

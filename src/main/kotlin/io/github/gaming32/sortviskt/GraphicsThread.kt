@@ -6,7 +6,8 @@ import org.lwjgl.opengl.GL11.*
 import kotlin.concurrent.withLock
 import kotlin.math.roundToInt
 
-class GraphicsThread(private val list: VisualList) : Thread("GraphicsThread") {
+class GraphicsThread(private val mainWindow: MainWindow) : Thread("GraphicsThread") {
+    private val list = mainWindow.list
     var shouldShowStats = true
     var label = ""
     var windowSize = 0 to 0
@@ -47,28 +48,34 @@ class GraphicsThread(private val list: VisualList) : Thread("GraphicsThread") {
         glLoadIdentity()
         glTranslatef(0f, 0f, -200f)
 
-        var lastTime = glfwGetTime()
-        var averageTimeDelta = 0.0
-        while (!glfwWindowShouldClose(window) && !interrupted()) {
-            val currentTime = glfwGetTime()
-            val timeDelta = currentTime - lastTime
+        val soundSystem = SoundSystem(mainWindow)
+        try {
+            var lastTime = glfwGetTime()
+            var averageTimeDelta = 0.0
+            while (!glfwWindowShouldClose(window) && !interrupted()) {
+                val currentTime = glfwGetTime()
+                val timeDelta = currentTime - lastTime
 
-            glClear(GL_COLOR_BUFFER_BIT)
+                glClear(GL_COLOR_BUFFER_BIT)
 
-            list.lengthLock.withLock { render() }
-            if (shouldShowStats) {
-                showStats(averageTimeDelta)
+                list.lengthLock.withLock { render() }
+                if (shouldShowStats) {
+                    showStats(averageTimeDelta)
+                }
+
+//                soundSystem.tick()
+
+                lastTime = currentTime
+                averageTimeDelta = (timeDelta + averageTimeDelta * 9) / 10
+
+                glfwSwapBuffers(window)
+                glfwPollEvents()
             }
-
-            lastTime = currentTime
-            averageTimeDelta = (timeDelta + averageTimeDelta * 9) / 10
-
-            glfwSwapBuffers(window)
-            glfwPollEvents()
+        } finally {
+            soundSystem.close()
+            glfwDestroyWindow(window)
+            glfwTerminate()
         }
-
-        glfwDestroyWindow(window)
-        glfwTerminate()
     }
 
     private fun render() {
