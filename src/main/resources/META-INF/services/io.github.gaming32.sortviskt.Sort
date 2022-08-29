@@ -1,2 +1,4 @@
 io.github.gaming32.sortviskt.sorts.BubbleSort
+io.github.gaming32.sortviskt.sorts.DequeSort
 io.github.gaming32.sortviskt.sorts.QuickSort
+io.github.gaming32.sortviskt.sorts.SelectionSort
