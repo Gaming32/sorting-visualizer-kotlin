@@ -39,8 +39,8 @@ class GraphicsThread(private val list: VisualList) : Thread("GraphicsThread") {
         glViewport(0, 0, windowSize.first, windowSize.second)
 
         // Commented out until we render a text shadow
-//        glEnable(GL_BLEND)
-//        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
         glClearColor(0f, 0f, 0f, 1f)
         glMatrixMode(GL_MODELVIEW)
@@ -108,6 +108,7 @@ class GraphicsThread(private val list: VisualList) : Thread("GraphicsThread") {
             "   ${stats.writes.toString().padStart(4)} writes" +
             "   ${stats.accesses.toString().padStart(4)} accesses" +
             "   ${(1 / averageTimeDelta).roundToInt()} FPS"
+        TextRenderer.drawText(text, 6f, 6f, 0x000000)
         TextRenderer.drawText(text, 5f, 5f, 0xffffff)
     }
 }
