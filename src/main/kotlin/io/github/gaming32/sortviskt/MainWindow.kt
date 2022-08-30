@@ -7,6 +7,7 @@ import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.*
 import javax.swing.Timer
+import kotlin.concurrent.thread
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -22,6 +23,7 @@ class MainWindow : JFrame(APP_NAME) {
     lateinit var chooseSort: JLabel
         private set
 
+    internal var playSound = false
     var delayMultiplier = 1.0
 
     init {
@@ -98,6 +100,14 @@ class MainWindow : JFrame(APP_NAME) {
             }
         })
 
+        add(JCheckBox("Play sound").also { checkBox ->
+            checkBox.alignmentX = CENTER_ALIGNMENT
+            checkBox.isSelected = playSound
+            checkBox.addActionListener {
+                playSound = checkBox.isSelected
+            }
+        })
+
         add(JSlider(JSlider.VERTICAL, 10_0000, 20_00000, 11_00000).also { slider ->
             var lockToPow2 = false
             var lockSlider = false
@@ -163,6 +173,17 @@ fun main() {
         val mainWindow = MainWindow()
         mainWindow.isVisible = true
         mainWindow.graphics.start()
+        while (!mainWindow.graphics.isAlive) {
+            // Just wait
+        }
+        thread(isDaemon = true) {
+            SoundSystem(mainWindow).use { soundSystem ->
+                while (mainWindow.graphics.isAlive) {
+                    soundSystem.tick()
+                    Thread.sleep(1000 / 60)
+                }
+            }
+        }
         Timer(500) { event ->
             if (!mainWindow.graphics.isAlive) {
                 mainWindow.dispose()

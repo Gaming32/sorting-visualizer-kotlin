@@ -13,7 +13,7 @@ abstract class AbstractSort(override val name: String) : Sort
 
 class SortThread(private val window: MainWindow, private val sort: Sort) : Thread("SortThread") {
     init {
-        isDaemon = false
+        isDaemon = true
     }
 
     override fun run() {

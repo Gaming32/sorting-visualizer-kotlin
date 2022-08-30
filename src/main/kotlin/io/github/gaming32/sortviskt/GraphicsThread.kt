@@ -6,14 +6,14 @@ import org.lwjgl.opengl.GL11.*
 import kotlin.concurrent.withLock
 import kotlin.math.roundToInt
 
-class GraphicsThread(private val mainWindow: MainWindow) : Thread("GraphicsThread") {
+class GraphicsThread(mainWindow: MainWindow) : Thread("GraphicsThread") {
     private val list = mainWindow.list
     var shouldShowStats = true
     var label = ""
     var windowSize = 0 to 0
 
     init {
-        isDaemon = false
+        isDaemon = true
     }
 
     override fun run() {
@@ -48,7 +48,6 @@ class GraphicsThread(private val mainWindow: MainWindow) : Thread("GraphicsThrea
         glLoadIdentity()
         glTranslatef(0f, 0f, -200f)
 
-        val soundSystem = SoundSystem(mainWindow)
         try {
             var lastTime = glfwGetTime()
             var averageTimeDelta = 0.0
@@ -63,8 +62,6 @@ class GraphicsThread(private val mainWindow: MainWindow) : Thread("GraphicsThrea
                     showStats(averageTimeDelta)
                 }
 
-//                soundSystem.tick()
-
                 lastTime = currentTime
                 averageTimeDelta = (timeDelta + averageTimeDelta * 9) / 10
 
@@ -72,7 +69,6 @@ class GraphicsThread(private val mainWindow: MainWindow) : Thread("GraphicsThrea
                 glfwPollEvents()
             }
         } finally {
-            soundSystem.close()
             glfwDestroyWindow(window)
             glfwTerminate()
         }
