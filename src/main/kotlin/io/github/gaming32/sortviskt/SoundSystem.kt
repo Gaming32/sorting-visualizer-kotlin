@@ -9,18 +9,20 @@ import kotlin.math.pow
 
 class SoundSystem(private val window: MainWindow) : AutoCloseable {
     companion object {
-        private const val PITCH_MIN = 25.0
-        private const val PITCH_MAX = 105.0
-        private const val SOUND_MUL = 1.0
+        private const val DEFAULT_INSTRUMENT = 16 // Rock organ
+        private const val PITCH_MIN: Double = 25.0
+        private const val PITCH_MAX: Double = 105.0
+        private const val SOUND_MUL: Double = 1.0
+        private const val VOLUME: Double = 0.05
         private const val REVERB = 91
     }
 
     private val synth = MidiSystem.getSynthesizer().also { synth ->
         synth.open()
-        synth.loadInstrument(synth.availableInstruments[0])
+        synth.loadInstrument(synth.availableInstruments[DEFAULT_INSTRUMENT])
     }
-    var instrument = 0
-    private var loadedInstrument = 0
+    var instrument = DEFAULT_INSTRUMENT
+    private var loadedInstrument = DEFAULT_INSTRUMENT
     private val channels = Array(15, ::refreshChannel)
 
     fun tick() {
@@ -50,7 +52,7 @@ class SoundSystem(private val window: MainWindow) : AutoCloseable {
                 if (SOUND_MUL >= 1 && vel < 256) {
                     vel *= vel
                 }
-                channels[channel].noteOn(pitchMajor, vel)
+                channels[channel].noteOn(pitchMajor, (vel * VOLUME).toInt())
                 channels[channel].pitchBend = pitchMinor
                 channels[channel].controlChange(REVERB, 10)
                 channel++

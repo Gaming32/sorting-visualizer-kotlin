@@ -23,7 +23,7 @@ class MainWindow : JFrame(APP_NAME) {
     lateinit var chooseSort: JLabel
         private set
 
-    internal var playSound = false
+    internal var playSound = true
     var delayMultiplier = 1.0
 
     init {
