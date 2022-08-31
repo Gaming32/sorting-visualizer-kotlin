@@ -33,6 +33,7 @@ class SortThread(private val window: MainWindow, private val sort: Sort) : Threa
             window.list.shuffle()
         } catch (t: Throwable) {
             if (t !is CancelledException) {
+                t.printStackTrace()
                 showError("Shuffle error: $t")
             }
             return cleanup()
@@ -50,6 +51,7 @@ class SortThread(private val window: MainWindow, private val sort: Sort) : Threa
             sort.run(window.list)
         } catch (t: Throwable) {
             if (t !is CancelledException) {
+                t.printStackTrace()
                 showError("Sort error: $t")
             }
         }
