@@ -14,7 +14,7 @@ class GraphicsThread(mainWindow: MainWindow) : Thread("GraphicsThread") {
     var windowSize = 0 to 0
 
     init {
-        isDaemon = true
+        isDaemon = false
     }
 
     override fun run() {

@@ -186,7 +186,7 @@ fun main() {
         while (!mainWindow.graphics.isAlive) {
             // Just wait
         }
-        thread(isDaemon = true) {
+        thread {
             SoundSystem(mainWindow).use { soundSystem ->
                 while (mainWindow.graphics.isAlive) {
                     soundSystem.tick()
