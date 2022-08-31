@@ -28,8 +28,7 @@ class GraphicsThread(mainWindow: MainWindow) : Thread("GraphicsThread") {
         glfwDefaultWindowHints()
 
         val monitor = glfwGetPrimaryMonitor()
-        val videoMode = glfwGetVideoMode(monitor)
-            ?: throw RuntimeException("You need a monitor to run this application")
+        val videoMode = glfwGetVideoMode(monitor) ?: throw RuntimeException("Could not determine video mode")
 
         windowSize = Pair(videoMode.width() / 2, videoMode.height() / 2)
         val window = glfwCreateWindow(windowSize.first, windowSize.second, APP_NAME, 0, 0)
@@ -51,6 +50,53 @@ class GraphicsThread(mainWindow: MainWindow) : Thread("GraphicsThread") {
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         glTranslatef(0f, 0f, -200f)
+
+        val windowX = IntArray(1)
+        val windowY = IntArray(1)
+        val windowW = IntArray(1)
+        val windowH = IntArray(1)
+        glfwSetKeyCallback(window) { _, key, _, action, _ ->
+            if (action == GLFW_RELEASE) {
+                when (key) {
+                    GLFW_KEY_F11 -> {
+                        if (glfwGetWindowMonitor(window) == 0L) {
+                            // Make fulscreen
+                            glfwGetWindowPos(window, windowX, windowY)
+                            glfwGetWindowSize(window, windowW, windowH)
+                            val monitors = glfwGetMonitors() ?: throw RuntimeException("No monitors found")
+                            var testMonitor = 0L
+                            val monitorX = IntArray(1)
+                            val monitorY = IntArray(1)
+                            val monitorW = IntArray(1)
+                            val monitorH = IntArray(1)
+                            for (i in 0 until monitors.limit()) {
+                                testMonitor = monitors[i]
+                                glfwGetMonitorWorkarea(testMonitor, monitorX, monitorY, monitorW, monitorH)
+                                if (
+                                    windowX[0] >= monitorX[0] &&
+                                    windowX[0] < monitorX[0] + monitorW[0] &&
+                                    windowY[0] >= monitorY[0] &&
+                                    windowY[0] < monitorY[0] + monitorH[0]
+                                ) {
+                                    break
+                                }
+                            }
+                            val currentVideoMode = glfwGetVideoMode(monitor)
+                                ?: throw RuntimeException("Could not determine video mode")
+                            glfwSetWindowMonitor(
+                                window, testMonitor,
+                                0, 0,
+                                currentVideoMode.width(), currentVideoMode.height(),
+                                currentVideoMode.refreshRate()
+                            )
+                        } else {
+                            // Make windowed
+                            glfwSetWindowMonitor(window, 0L, windowX[0], windowY[0], windowW[0], windowH[0], 0)
+                        }
+                    }
+                }
+            }
+        }
 
         try {
             var lastTime = glfwGetTime()
