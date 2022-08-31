@@ -1,6 +1,7 @@
 package io.github.gaming32.sortviskt
 
 import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
 import kotlin.concurrent.withLock
@@ -17,6 +18,9 @@ class GraphicsThread(mainWindow: MainWindow) : Thread("GraphicsThread") {
     }
 
     override fun run() {
+        val errorCallback = GLFWErrorCallback.createPrint()
+        glfwSetErrorCallback(errorCallback)
+
         if (!glfwInit()) {
             throw RuntimeException("Failed to initialize GLFW")
         }
@@ -71,6 +75,7 @@ class GraphicsThread(mainWindow: MainWindow) : Thread("GraphicsThread") {
         } finally {
             glfwDestroyWindow(window)
             glfwTerminate()
+            errorCallback.free()
         }
     }
 
