@@ -26,6 +26,10 @@ class GraphicsThread(mainWindow: MainWindow) : Thread("GraphicsThread") {
         }
 
         glfwDefaultWindowHints()
+        glfwWindowHint(
+            GLFW_AUTO_ICONIFY,
+            if ((glfwGetMonitors()?.limit() ?: 0) > 1) GLFW_FALSE else GLFW_TRUE
+        )
 
         val monitor = glfwGetPrimaryMonitor()
         val videoMode = glfwGetVideoMode(monitor) ?: throw RuntimeException("Could not determine video mode")
