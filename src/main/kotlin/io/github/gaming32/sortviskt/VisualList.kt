@@ -19,10 +19,20 @@ class VisualList(initialLength: Int) : AbstractList<Int>(), RandomAccess {
         }
     internal val lengthLock: Lock = ReentrantLock()
     internal val marksLock: Lock = ReentrantLock()
+    private var cancelled = false
     val stats = Stats()
+
+    fun cancel() {
+        cancelled = true
+    }
 
     fun sleep(ms: Double) {
         singleDelay = ms
+        if (cancelled) {
+            cancelled = false
+            marksLock.withLock { marks.clear() }
+            throw CancelledException()
+        }
         if (delay == 0.0) return
         currentDelay += ms
         while (currentDelay > 0.0) {

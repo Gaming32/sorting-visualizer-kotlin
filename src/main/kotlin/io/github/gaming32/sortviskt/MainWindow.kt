@@ -22,6 +22,8 @@ class MainWindow : JFrame(APP_NAME) {
 
     lateinit var chooseSort: JLabel
         private set
+    lateinit var cancelSort: JButton
+        private set
 
     internal var playSound = true
     var delayMultiplier = 1.0
@@ -39,10 +41,9 @@ class MainWindow : JFrame(APP_NAME) {
     private fun initComponents() {
         contentPane.layout = BoxLayout(contentPane, BoxLayout.Y_AXIS)
 
-        chooseSort = JLabel("Choose sort:").also { label ->
+        chooseSort = add(JLabel("Choose sort:").also { label ->
             label.alignmentX = CENTER_ALIGNMENT
-        }
-        add(chooseSort)
+        }) as JLabel
         add(JComboBox(sorts.keys.toTypedArray()).also { chooseSort ->
             chooseSort.alignmentX = CENTER_ALIGNMENT
             chooseSort.addActionListener {
@@ -72,6 +73,15 @@ class MainWindow : JFrame(APP_NAME) {
                 list.delay = 0.0
             }
         })
+
+        cancelSort = add(JButton("Cancel sort").also { cancelSort ->
+            cancelSort.alignmentX = CENTER_ALIGNMENT
+            cancelSort.isEnabled = false
+            cancelSort.addActionListener {
+                println("Cancel sort")
+                list.cancel()
+            }
+        }) as JButton
 
         add(JButton("Change speed modifier").also { setDelay ->
             setDelay.alignmentX = CENTER_ALIGNMENT
