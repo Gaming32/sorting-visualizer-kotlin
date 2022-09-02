@@ -12,11 +12,16 @@ val lwjglVersion = "3.3.1"
 
 repositories {
     mavenCentral()
+    maven {
+        name = "gaming32-snapshots"
+        url = uri("https://maven.jemnetworks.com/snapshots")
+    }
 }
 
 dependencies {
-    implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
+    implementation("io.github.holygrailsortproject:rewritten-grailsort-jvm:1.0-SNAPSHOT")
 
+    implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
     implementation("org.lwjgl", "lwjgl")
     implementation("org.lwjgl", "lwjgl-glfw")
     implementation("org.lwjgl", "lwjgl-opengl")
@@ -29,8 +34,6 @@ dependencies {
         runtimeOnly("org.lwjgl", "lwjgl-glfw", classifier = lwjglNatives)
         runtimeOnly("org.lwjgl", "lwjgl-opengl", classifier = lwjglNatives)
     }
-
-    testImplementation(kotlin("test"))
 }
 
 application {
