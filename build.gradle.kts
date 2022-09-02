@@ -5,21 +5,26 @@ plugins {
     kotlin("jvm") version "1.7.10"
 }
 
+val kotlinVersion: String by project
+val lwjglVersion: String by project
+
 group = "io.github.gaming32"
 version = "1.0-SNAPSHOT"
-
-val lwjglVersion = "3.3.1"
 
 repositories {
     mavenCentral()
     maven {
-        name = "gaming32-snapshots"
-        url = uri("https://maven.jemnetworks.com/snapshots")
+        name = "gaming32-releases"
+        url = uri("https://maven.jemnetworks.com/releases")
     }
 }
 
 dependencies {
-    implementation("io.github.holygrailsortproject:rewritten-grailsort-jvm:1.0-SNAPSHOT")
+    implementation("io.github.holygrailsortproject:rewritten-grailsort-jvm:1.0")
+
+    implementation("org.jetbrains.kotlin:kotlin-scripting-common:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-scripting-jvm:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-scripting-jvm-host:$kotlinVersion")
 
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
     implementation("org.lwjgl", "lwjgl")
@@ -38,10 +43,6 @@ dependencies {
 
 application {
     mainClass.set("io.github.gaming32.sortviskt.MainWindowKt")
-}
-
-tasks.test {
-    useJUnitPlatform()
 }
 
 tasks.withType<KotlinCompile> {

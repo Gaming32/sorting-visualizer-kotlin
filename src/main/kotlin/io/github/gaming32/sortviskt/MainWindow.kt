@@ -4,18 +4,22 @@ import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.io.File
 import java.util.*
 import javax.swing.*
 import javax.swing.Timer
+import javax.swing.filechooser.FileFilter
 import kotlin.concurrent.thread
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.script.experimental.api.ScriptDiagnostic
+import kotlin.script.experimental.api.valueOr
 
 internal const val APP_NAME = "Kotlin Sorting Visualizer"
 
 class MainWindow : JFrame(APP_NAME) {
-    private val sorts = mutableMapOf<String, Sort>()
+    private val sorts = sortedMapOf<String, Sort>()
     val list = VisualList(2048)
     val graphics = GraphicsThread(this)
     private var sortThread: SortThread? = null
@@ -44,9 +48,13 @@ class MainWindow : JFrame(APP_NAME) {
         chooseSort = add(JLabel("Choose sort:").also { label ->
             label.alignmentX = CENTER_ALIGNMENT
         }) as JLabel
-        add(JComboBox(sorts.keys.toTypedArray()).also { chooseSort ->
+
+        var disableSortsList = false
+        @Suppress("UNCHECKED_CAST")
+        val sortsList = add(JComboBox(sorts.keys.toTypedArray()).also { chooseSort ->
             chooseSort.alignmentX = CENTER_ALIGNMENT
             chooseSort.addActionListener {
+                if (disableSortsList) return@addActionListener
                 var sortThread2 = sortThread
                 if (sortThread2 != null && sortThread2.isAlive) return@addActionListener
                 println("Selected ${chooseSort.selectedItem}")
@@ -55,16 +63,69 @@ class MainWindow : JFrame(APP_NAME) {
                 sortThread = sortThread2
                 sortThread2.start()
             }
-        })
+        }) as JComboBox<String>
 
         add(Box.createVerticalStrut(10))
 
-//        add(JButton("Import sort").also { importSort ->
-//            importSort.alignmentX = CENTER_ALIGNMENT
-//            importSort.addActionListener {
-//                println("Import sort")
-//            }
-//        })
+        add(JButton("Import sort").also { importSort ->
+            importSort.alignmentX = CENTER_ALIGNMENT
+            importSort.addActionListener {
+                println("Import sort")
+                val scriptFile = JFileChooser(System.getProperty("user.dir")).run {
+                    isAcceptAllFileFilterUsed = false
+                    resetChoosableFileFilters()
+                    addChoosableFileFilter(object : FileFilter() {
+                        override fun accept(f: File?) = if (f?.isDirectory != false) {
+                            f != null
+                        } else {
+                            f.path.endsWith(".sort.kts")
+                        }
+                        override fun getDescription() = "Sorts (*.sort.kts)"
+                    })
+                    if (showOpenDialog(this@MainWindow) != JFileChooser.APPROVE_OPTION) return@addActionListener
+                    selectedFile
+                }
+                val result = evalFile(scriptFile)
+                val messageBody = result.reports
+                    .asSequence()
+                    .filter { report ->
+                        report.severity > ScriptDiagnostic.Severity.DEBUG && (
+                            // Silence "using new version of JAR FS" warning
+                            report.severity != ScriptDiagnostic.Severity.WARNING ||
+                                !report.message.contains("JAR FS")
+                            )
+                    }
+                    .joinToString("\n") { report ->
+                        val location = if (report.location != null) {
+                            "(${report.location!!.start.line}:${report.location!!.start.col}) "
+                        } else ""
+                        location +
+                            "${report.severity.name[0].lowercaseChar()}: " +
+                            (report.exception?.toString() ?: report.message)
+                    }
+                val sort = evalFile(scriptFile).valueOr { _ ->
+                    JOptionPane.showMessageDialog(
+                        this,
+                        "Failed to import ${scriptFile.name}\n$messageBody",
+                        APP_NAME,
+                        JOptionPane.INFORMATION_MESSAGE
+                    )
+                    return@addActionListener
+                }.returnValue.scriptInstance as Sort
+                println("Evaluated ${sort.name}")
+                sorts[sort.name] = sort
+                disableSortsList = true
+                sortsList.removeAllItems()
+                sorts.keys.forEach { sortsList.addItem(it) }
+                disableSortsList = false
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Successfully imported ${sort.name}\n$messageBody",
+                    APP_NAME,
+                    JOptionPane.INFORMATION_MESSAGE
+                )
+            }
+        })
 
         add(JButton("Cancel delay").also { cancelDelay ->
             cancelDelay.alignmentX = CENTER_ALIGNMENT
